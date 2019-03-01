@@ -1,0 +1,13 @@
+apiVersion: v1 #api version to use
+kind: Service #k8 object type
+metadata:
+  name: gorbacdemo-service #name of object
+  labels:
+    app: gorbacdemo #label for object referenced via selector
+spec:
+  ports:
+  - port: 8080   #port mapping 8080
+    name: http #supported protocol
+    targetPort: 3001
+  selector:
+    app: gorbacdemo #label to select

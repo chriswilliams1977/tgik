@@ -1,0 +1,18 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: gorbacdemo-v1 #pod name
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: gorbacdemo #label for deployment object
+        version: v1 #version
+    spec:
+      containers:
+      - name: gorbacdemo #name of container
+        image: gcr.io/williamscj-tgik/rbac-demo-app:v1 #gcr image
+        imagePullPolicy: Always #IfNotPresent
+        ports:
+        - containerPort: 3001 #map to container listening port
