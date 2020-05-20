@@ -2,6 +2,17 @@
 ---------------------
 GENERAL
 ----------------------------
+#No such thing as the master
+#Set of components that make up the control plane
+#Microservice ish distributed services running on single node
+#Or spread across nodes for reliability and scalability - regional clusters
+#ectd central data store for state - key/value store - really focuses on consistency
+#https://github.com/kubernetes/community/blob/master/sig-scalability/goals.md - to get limits of k8
+#Limits for master when things slow down
+
+#To get kubeconfig
+#Default location ~/.kube/config
+
 #Imperative commands = objects created/managed via CLI. Executed against live objects
 #Example
 kubectl create ns [name]
@@ -114,72 +125,4 @@ curl [ip address]
 #check service json
 kubectl get service [name] -o json
 
----------------------
-ISTIO
----------------------
-#service mesh brings complexity
-#Istio helps eleviate problems areound service overloading, discovery, decoupling, security	
-#security and identity of who is calling a service
-#Twitter finnagle library led to linkerd (own binary)
-#Google had a library per lang python using swig
-#sidecar runs next to app and implements magic (Envoy)
-#Istio provides a control plane to manage app these proxies 
 
-#namespace in K8 are used to isolate resource by teams also manage quota and security policy
-
-#Cluster roles are scoped cluster wide thus not scoped to specific namespace
-
-#Install
-gcloud container clusters create istio-tutorial \
-    --machine-type=n1-standard-2 \
-    --num-nodes=4 \
-
-#if existing version = >1.6 with RBAC enabled
-#Check is RBAC is enabled on cluster
-#kubectl api-versions | grep rbac
-#To install
-#Kubectl apply -f install/kubernetes/istio-rbac-beta.yaml
-
-#Istio installed under istio-system namespace and can access services on all other namespaces
-
-#download tar ball, extract 
-#cd to root of istio
-#add to path
-export PATH=$PWD/bin:$PATH
-
-#grant cluster admin role to current user
-kubectl create clusterrolebinding cluster-admin-binding \
-  --clusterrole=cluster-admin \
-  --user="$(gcloud config get-value core/account)"
-
-#install istio
-kubectl apply -f install/kubernetes/istio-demo-auth.yaml
-
-#check installed services: istio-citadel, istio-pilot, istio-ingressgateway, istio-policy, and istio-telemetry
-kubectl get service -n istio-system
-
-#check deployed pods: istio-pilot-*, istio-policy-*, istio-telemetry-*, istio-ingressgateway-*, and istio-citadel-*.
-kubectl get pods -n istio-system 
-
-#deploy bookinfo sample
-kubectl apply -f <(istioctl kube-inject -f samples/bookinfo/platform/kube/bookinfo.yaml)
-
-#get logs
-kubectl logs [pod] -n [namespace]
-
-#Debugging
-#Shows status of each proxy
-istioctl proxy-status
-#Shows envoy proxy configuration for each sidecar
-istioctl proxy-config clusters -n istio-system [pod id]
-#Follow an envoy request 
-#If you query the listener summary on a pod you will notice Istio generates the following listeners
-#A listener on 0.0.0.0:15001 that receives all traffic into and out of the pod, then hands the request over to a virtual listener.
-#A virtual listener per service IP, per each non-HTTP for outbound TCP/HTTPS traffic.
-#A virtual listener on the pod IP for each exposed port for inbound traffic.
-#A virtual listener on 0.0.0.0 per each HTTP port for outbound HTTP traffic.
-#every sidecar has a listener bound to 0.0.0.0:15001, where IP tables routes all inbound and outbound pod traffic to
-#this This listener has useOriginalDst set to true = it hands the request over to the listener that best matches the original destination of the request
-#No match = BlackHoleCluster which returns a 404
-istioctl proxy-config listeners [pod]
-istioctl proxy-config listeners [pod] --port 15001 -o json

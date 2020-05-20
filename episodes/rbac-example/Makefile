@@ -26,7 +26,7 @@ kubectl config view
 #get certificate signing request - no namespace
 kubectl get csr [name] -o yaml
 #get nodes - no namespace
-kubecrl get nodes [name] -o yaml | less
+kubectl get nodes [name] -o yaml | less
 
 #IMPORTANT
 #roles are namespaced resources - ns specific
